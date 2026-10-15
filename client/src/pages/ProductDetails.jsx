@@ -1,13 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../lib/axios';
+import { AuthContext } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { Store, ArrowLeft } from 'lucide-react';
 
 const ProductDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const { addProduct } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cartMessage, setCartMessage] = useState('');
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -30,7 +35,24 @@ const ProductDetails = () => {
   if (loading) return <div className="flex justify-center p-12"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div></div>;
   if (!product) return <div className="text-center p-12">Product not found</div>;
 
+  const stockQuantity = Number.isInteger(product.stockQuantity) ? product.stockQuantity : 0;
   const artisan = product.artisanDetails || product.artisan;
+
+  const handleAddToCart = () => {
+    if (!user || user.role !== 'buyer') {
+      navigate('/login', { state: { from: `/product/${product._id}` } });
+      return;
+    }
+
+    const result = addProduct(product);
+    if (!result.added) {
+      setCartMessage(result.atLimit ? 'The cart already has the maximum available quantity.' : 'This product is sold out.');
+      return;
+    }
+    setCartMessage(result.replaced
+      ? `Added to ${artisan?.artisanData?.shopName || 'this shop'}. Your cart from the previous shop was replaced.`
+      : 'Added to your cart.');
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -52,6 +74,9 @@ const ProductDetails = () => {
                 <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
                 <p className="text-2xl font-bold text-amber-600">₹{product.price}</p>
               </div>
+              <p className={`mt-2 text-sm font-medium ${stockQuantity > 0 ? 'text-gray-600' : 'text-red-700'}`}>
+                {stockQuantity > 0 ? `${stockQuantity} in stock` : 'Sold out'}
+              </p>
               <p className="mt-4 text-gray-600 leading-relaxed">{product.description}</p>
               
               <div className="mt-6 flex flex-wrap gap-2">
@@ -78,11 +103,17 @@ const ProductDetails = () => {
 
             <div className="mt-8">
               <button
-                onClick={() => navigate(`/checkout/${product._id}`)}
-                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                type="button"
+                disabled={stockQuantity === 0}
+                onClick={handleAddToCart}
+                className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-base font-medium text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500 disabled:cursor-not-allowed disabled:bg-gray-400"
               >
-                Initiate Self-Pickup
+                {stockQuantity > 0 ? 'Add to Cart' : 'Sold out'}
               </button>
+              {cartMessage && <p role="status" className="mt-3 text-sm text-gray-700">{cartMessage}</p>}
+              <Link to="/cart" className="mt-3 flex justify-center text-sm font-medium text-amber-700 hover:text-amber-800">
+                View Cart
+              </Link>
             </div>
           </div>
         </div>

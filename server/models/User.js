@@ -6,13 +6,19 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please add a name'],
+      trim: true,
+      minlength: [2, 'Name must be at least 2 characters'],
+      maxlength: [80, 'Name cannot exceed 80 characters'],
     },
     email: {
       type: String,
       required: [true, 'Please add an email'],
       unique: true,
+      trim: true,
+      lowercase: true,
+      maxlength: [254, 'Email cannot exceed 254 characters'],
       match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
+        /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/,
         'Please add a valid email',
       ],
     },
@@ -20,6 +26,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Please add a password'],
       minlength: 6,
+      maxlength: 128,
       select: false, // Don't return password in queries by default
     },
     role: {
@@ -43,6 +50,18 @@ const userSchema = new mongoose.Schema(
       bio: String,
       story: String,
       upiId: String,
+      deliveryBaseFee: {
+        type: Number,
+        min: 0,
+        max: 100000,
+        default: 15,
+      },
+      deliveryPerKmRate: {
+        type: Number,
+        min: 0,
+        max: 10000,
+        default: 2,
+      },
     }
   },
   { timestamps: true }
@@ -51,7 +70,7 @@ const userSchema = new mongoose.Schema(
 // Encrypt password using bcryptjs
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) {
-    next();
+    return next();
   }
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
@@ -63,4 +82,3 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
 };
 
 module.exports = mongoose.model('User', userSchema);
-

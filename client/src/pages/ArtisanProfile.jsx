@@ -83,6 +83,9 @@ const ArtisanProfile = () => {
               <div className="p-4">
                 <h3 className="text-lg font-medium text-gray-900 truncate">{product.name}</h3>
                 <p className="mt-2 text-lg font-bold text-amber-600">₹{product.price}</p>
+                <p className={`mt-1 text-sm font-medium ${(product.stockQuantity ?? 0) > 0 ? 'text-gray-600' : 'text-red-700'}`}>
+                  {(product.stockQuantity ?? 0) > 0 ? `${product.stockQuantity} in stock` : 'Sold out'}
+                </p>
               </div>
             </div>
           </Link>

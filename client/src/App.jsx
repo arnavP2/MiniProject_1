@@ -8,6 +8,8 @@ import Checkout from './pages/Checkout';
 import OrderTracker from './pages/OrderTracker';
 import ArtisanDashboard from './pages/ArtisanDashboard';
 import ArtisanProfile from './pages/ArtisanProfile';
+import BuyerOrders from './pages/BuyerOrders';
+import Cart from './pages/Cart';
 
 function App() {
   return (
@@ -19,8 +21,10 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/product/:id" element={<ProductDetails />} />
-          <Route path="/checkout/:id" element={<Checkout />} />
           <Route path="/order/:id" element={<OrderTracker />} />
+          <Route path="/my-orders" element={<BuyerOrders />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
           <Route path="/dashboard" element={<ArtisanDashboard />} />
           <Route path="/artisan/:id" element={<ArtisanProfile />} />
         </Routes>

@@ -34,13 +34,19 @@ export const AuthProvider = ({ children }) => {
     return data;
   };
 
+  const updateUser = (updatedUser) => setUser(updatedUser);
+
   const logout = async () => {
-    await api.post('/auth/logout');
+    try {
+      await api.get('/auth/logout');
+    } catch (error) {
+      console.error('Logout failed on backend:', error);
+    }
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, checkAuth }}>
+    <AuthContext.Provider value={{ user, login, register, logout, loading, checkAuth, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

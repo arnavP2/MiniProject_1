@@ -26,6 +26,15 @@ const errorHandler = (err, req, res, next) => {
     error.statusCode = 400;
   }
 
+  if (err.name === 'MulterError') {
+    error.statusCode = 400;
+    error.message = err.code === 'LIMIT_FILE_SIZE'
+      ? 'Each product image must be 5 MB or smaller'
+      : ['LIMIT_FILE_COUNT', 'LIMIT_UNEXPECTED_FILE'].includes(err.code)
+        ? 'Upload no more than 5 product images'
+        : 'Invalid product image upload';
+  }
+
   res.status(error.statusCode || 500).json({
     success: false,
     error: error.message || 'Server Error'

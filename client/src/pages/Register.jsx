@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { Store, MapPin } from 'lucide-react';
@@ -16,8 +16,18 @@ const Register = () => {
   const [location, setLocation] = useState(null);
   const [locating, setLocating] = useState(false);
   const [error, setError] = useState('');
-  const { register } = useContext(AuthContext);
+  const { user, register, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!authLoading && user) {
+      if (user.role === 'artisan') {
+        navigate('/dashboard');
+      } else {
+        navigate('/');
+      }
+    }
+  }, [user, authLoading, navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -68,7 +78,7 @@ const Register = () => {
         navigate('/');
       }
     } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+      setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed');
     }
   };
 
@@ -89,6 +99,9 @@ const Register = () => {
                 type="text"
                 name="name"
                 required
+                minLength={2}
+                maxLength={80}
+                autoComplete="name"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                 onChange={handleChange}
               />
@@ -99,6 +112,8 @@ const Register = () => {
                 type="email"
                 name="email"
                 required
+                maxLength={254}
+                autoComplete="email"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                 onChange={handleChange}
               />
@@ -109,7 +124,9 @@ const Register = () => {
                 type="password"
                 name="password"
                 required
+                autoComplete="new-password"
                 minLength="6"
+                maxLength="128"
                 className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                 onChange={handleChange}
               />
@@ -137,6 +154,9 @@ const Register = () => {
                     type="text"
                     name="shopName"
                     required={formData.role === 'artisan'}
+                    minLength={2}
+                    maxLength={100}
+                    autoComplete="organization"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                     onChange={handleChange}
                   />
@@ -146,6 +166,8 @@ const Register = () => {
                   <textarea
                     name="bio"
                     rows="3"
+                    minLength={10}
+                    maxLength={500}
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                     onChange={handleChange}
                   ></textarea>
@@ -156,6 +178,9 @@ const Register = () => {
                     type="text"
                     name="upiId"
                     required={formData.role === 'artisan'}
+                    pattern="[A-Za-z0-9._-]+@[A-Za-z0-9][A-Za-z0-9.-]*"
+                    maxLength={100}
+                    title="Enter a valid UPI ID, such as name@bank"
                     placeholder="example@upi"
                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                     onChange={handleChange}

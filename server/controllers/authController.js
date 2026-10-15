@@ -37,14 +37,55 @@ const sendTokenResponse = (user, statusCode, res) => {
 exports.register = asyncHandler(async (req, res, next) => {
   const { name, email, password, role, artisanData, location } = req.body;
 
+  const normalizedName = typeof name === 'string' ? name.trim() : '';
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (normalizedName.length < 2 || normalizedName.length > 80) {
+    return res.status(400).json({ success: false, message: 'Name must be between 2 and 80 characters' });
+  }
+  if (normalizedEmail.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail)) {
+    return res.status(400).json({ success: false, message: 'Enter a valid email address' });
+  }
+  if (typeof password !== 'string' || password.length < 6 || password.length > 128) {
+    return res.status(400).json({ success: false, message: 'Password must be between 6 and 128 characters' });
+  }
+  if (!['buyer', 'artisan'].includes(role || 'buyer')) {
+    return res.status(400).json({ success: false, message: 'Choose a valid account type' });
+  }
+  if (role === 'artisan') {
+    const shopName = typeof artisanData?.shopName === 'string' ? artisanData.shopName.trim() : '';
+    const upiId = typeof artisanData?.upiId === 'string' ? artisanData.upiId.trim() : '';
+    const coordinates = location?.coordinates;
+    if (shopName.length < 2 || shopName.length > 100) {
+      return res.status(400).json({ success: false, message: 'Shop name must be between 2 and 100 characters' });
+    }
+    if (artisanData?.bio !== undefined && (typeof artisanData.bio !== 'string' || (artisanData.bio.trim().length > 0 && artisanData.bio.trim().length < 10) || artisanData.bio.trim().length > 500)) {
+      return res.status(400).json({ success: false, message: 'Shop story must be empty or between 10 and 500 characters' });
+    }
+    if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9][A-Za-z0-9.-]*$/.test(upiId) || upiId.length > 100) {
+      return res.status(400).json({ success: false, message: 'Enter a valid UPI ID' });
+    }
+    if (!Array.isArray(coordinates) || coordinates.length !== 2 || !coordinates.every(Number.isFinite)) {
+      return res.status(400).json({ success: false, message: 'Set a valid shop location' });
+    }
+    const [longitude, latitude] = coordinates;
+    if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
+      return res.status(400).json({ success: false, message: 'Set a valid shop location' });
+    }
+  }
+
   // Create user
   const user = await User.create({
-    name,
-    email,
+    name: normalizedName,
+    email: normalizedEmail,
     password,
-    role,
-    artisanData,
-    location
+    role: role || 'buyer',
+    artisanData: role === 'artisan' ? {
+      ...artisanData,
+      shopName: artisanData.shopName.trim(),
+      bio: artisanData.bio?.trim() || '',
+      upiId: artisanData.upiId.trim(),
+    } : undefined,
+    location: role === 'artisan' ? location : undefined,
   });
 
   sendTokenResponse(user, 201, res);
@@ -56,13 +97,16 @@ exports.register = asyncHandler(async (req, res, next) => {
 exports.login = asyncHandler(async (req, res, next) => {
   const { email, password } = req.body;
 
-  // Validate emil & password
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Please provide an email and password' });
+  const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalizedEmail) || normalizedEmail.length > 254) {
+    return res.status(400).json({ success: false, message: 'Enter a valid email address' });
+  }
+  if (typeof password !== 'string' || password.length < 6 || password.length > 128) {
+    return res.status(400).json({ success: false, message: 'Password must be between 6 and 128 characters' });
   }
 
   // Check for user
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email: normalizedEmail }).select('+password');
   if (!user) {
     return res.status(401).json({ success: false, message: 'Invalid credentials' });
   }

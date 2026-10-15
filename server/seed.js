@@ -77,6 +77,8 @@ const seedData = async () => {
         name: "Handcrafted Ceramic Mug",
         description: "A beautiful, sturdy mug for your morning coffee.",
         price: 450,
+        stockQuantity: 20,
+        stockQuantity: 20,
         images: [{ url: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c", public_id: "placeholder" }],
         tags: ["Ceramic", "Mug", "Handmade"],
         location: createdArtisans[0].location
@@ -86,6 +88,8 @@ const seedData = async () => {
         name: "Stoneware Dinner Plate",
         description: "Minimalist grey dinner plate.",
         price: 800,
+        stockQuantity: 12,
+        stockQuantity: 12,
         images: [{ url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa", public_id: "placeholder" }],
         tags: ["Ceramic", "Plate", "Dining"],
         location: createdArtisans[0].location
@@ -95,6 +99,8 @@ const seedData = async () => {
         name: "Custom Cotton Shirt",
         description: "Tailored to fit, pure cotton fabric.",
         price: 1200,
+        stockQuantity: 8,
+        stockQuantity: 8,
         images: [{ url: "https://images.unsplash.com/photo-1540932239986-30128078f3c5", public_id: "placeholder" }],
         tags: ["Fashion", "Tailored", "Cotton"],
         location: createdArtisans[1].location
@@ -104,6 +110,8 @@ const seedData = async () => {
         name: "Wildflower Bouquet",
         description: "Freshly picked local wildflowers.",
         price: 350,
+        stockQuantity: 15,
+        stockQuantity: 15,
         images: [{ url: "https://images.unsplash.com/photo-1485955900006-10f4d324d411", public_id: "placeholder" }],
         tags: ["Flowers", "Eco-friendly", "Gift"],
         location: createdArtisans[2].location
@@ -113,6 +121,8 @@ const seedData = async () => {
         name: "Potted Succulent",
         description: "Low maintenance indoor plant.",
         price: 250,
+        stockQuantity: 18,
+        stockQuantity: 18,
         images: [{ url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa", public_id: "placeholder" }],
         tags: ["Plant", "Indoor", "Succulent"],
         location: createdArtisans[2].location
